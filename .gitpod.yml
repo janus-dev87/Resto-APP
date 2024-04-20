@@ -1,0 +1,47 @@
+image:
+  file: .gitpod.Dockerfile
+
+workspaceLocation: src/backend/backend.code-workspace
+
+tasks:
+  - name: "Payment API"
+    before: |
+      cd src/backend/services/payment-api
+    init: |
+      go mod tidy
+    command: |
+
+  - name: "Cart API"
+    before: |
+      cd src/backend/services/cart-api
+    init: |
+      go mod tidy
+
+  - name: "Order API"
+    before: |
+      cd src/backend/services/order-api
+    init: |
+      mvn package
+
+  - name: "Checkout API"
+    before: |
+      cd src/backend/services/checkout-api
+    init: npm install
+
+  
+  - name: "Catalog API"
+    before: |
+      cd src/backend/services/catalog-api
+    init:
+      cargo run build
+
+  - name: "Web App"
+    before:
+      cd src/backend/services/web-app
+    init: npm install
+  
+
+vscode:
+  extensions:
+    - golang.go
+    - vscjava.vscode-java-pack

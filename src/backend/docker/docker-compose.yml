@@ -1,0 +1,99 @@
+version: "3.7"
+
+services:
+  identity-api:
+    image: restaurant/identity-api
+    build: ./services/identity-api
+    depends_on:
+      - identity-db
+    ports:
+      - "5001:80"
+    restart: always
+
+  checkout-api:
+    image: restaurant/checkout-api
+    build: ./services/checkout-api
+    depends_on:
+      - cart-api
+      - payment-api
+    ports:
+      - 30001:30001
+
+  catalog-api:
+    image: catalog-api
+    build: ./services/catalog-api
+    depends_on:
+      - catalog-db
+    ports:
+      - 8000:8000
+    restart: always
+
+  cart-api:
+    image: restaurant/cart-api
+    build: ./services/cart-api
+    depends_on:
+      - redis
+    restart: always
+    ports:
+      - 5200:5200
+
+  order-api:
+    image: restaurant/order-api
+    build:
+      platforms:
+        - "linux/arm64"
+      context: ./services/order-api
+      dockerfile: Dockerfile
+    depends_on:
+      - order-db
+      - payment-api
+    ports:
+      - 8082:8080
+
+  payment-api:
+    image: restaurant/payment-api
+    build: ./services/payment-api
+    ports:
+      - 8083:8080
+      - 8980:8980
+
+  # dashboard-app:
+  #   image: restaurant/dashboard-app
+  #   build:
+  #     context: ./web/web.admin/dashboard
+  #     dockerfile: local.Dockerfile
+
+  web-app:
+    image: restaurant/web-app
+    build:
+      context: ./services/web-app
+      dockerfile: local.Dockerfile
+    ports:
+      - 3000
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # run in your host machine command:
+        # sudo sh -c "echo '127.0.0.1 \t host.docker.internal' >> /etc/hosts"
+
+  order-db:
+    image: postgres:alpine
+    volumes:
+      - database-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  catalog-db:
+    image: postgres:alpine
+    ports:
+      - "5434:5432"
+
+  identity-db:
+    image: postgres:alpine
+    ports:
+      - "5435:5432"
+
+  redis:
+    platform: linux/arm64/v8
+    image: redis:alpine
+
+volumes:
+  database-data:

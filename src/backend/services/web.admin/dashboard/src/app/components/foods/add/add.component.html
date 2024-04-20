@@ -1,0 +1,46 @@
+<mat-card class="container">
+  <form #foodForm (ngSubmit)="onSubmit(foodForm, file)">
+    <mat-card-content class="form-container">
+      <mat-form-field>
+        <input matInput placeholder="Food name" [(ngModel)]="food.name" name="name">
+      </mat-form-field>
+      <mat-form-field>
+        <input matInput placeholder="Food description" [(ngModel)]="food.description" name="description">
+      </mat-form-field>
+      <mat-form-field>
+        <input type="number" matInput placeholder="Price" [(ngModel)]="food.price" name="price">
+      </mat-form-field>
+      <mat-form-field>
+        <input matInput placeholder="Currency" [(ngModel)]="food.currency" name="currency">
+        <mat-error></mat-error>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-select placeholder="Categories" [(ngModel)]="food.categoryId" name="categoryId">
+          <mat-option *ngFor="let category of categories$ | async" [value]="category.id">
+            {{category.name}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <div style="margin:15px 0">
+        <input (change)="imageUpload($event)" multiple #file type="file" id="file">
+      </div>
+      <div class="images-container" *ngIf="allPictures?.length > 0">
+        <mat-card *ngFor="let picture of allPictures">
+          <img [src]="picture.filePath" class="food-image" />
+          <mat-divider></mat-divider>
+          <mat-card-actions align='end'>
+            <button mat-icon-button color="warn" (click)="deletePicture(picture)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </mat-card-content>
+    <mat-card-actions align='end'>
+      <div style="margin-top: 20px">
+        <button class="save-button" type="submit">Save</button>
+        <button mat-raised-button type="button" (click)="onCancel()">Cancel</button>
+      </div>
+    </mat-card-actions>
+  </form>
+</mat-card>

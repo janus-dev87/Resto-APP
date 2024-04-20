@@ -1,0 +1,26 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+resources:
+- deployment.yaml
+- service.yaml
+- http-route.yaml
+- menu-pgsql.yaml
+
+configMapGenerator:
+- envs:
+  - config.env
+  name: catalog-api
+
+secretGenerator:
+- envs:
+  - .env.secret
+  name: catalog-api
+
+images:
+- name: catalog-api
+  newName: ghcr.io/chayxana/catalog-api
+  newTag: 0.0.17

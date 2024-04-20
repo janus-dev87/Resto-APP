@@ -1,0 +1,35 @@
+  
+name: web-app
+
+on:
+  push:
+    branches:
+    - develop
+    paths:
+    - 'src/backend/services/web-app/**'
+    - '.github/workflows/web-app.yml'
+
+  pull_request:
+    branches:
+    - develop
+    paths:
+    - 'src/backend/services/web-app/**'
+    - '.github/workflows/web-app.yml'
+
+
+jobs:
+  build-release:
+    uses: ./.github/workflows/build-release.yml
+    with:
+      service-name: web-app
+    secrets: inherit
+
+  deploy:
+    if: github.ref == 'refs/heads/develop'
+    needs:
+      - build-release
+    uses: ./.github/workflows/deploy.yml
+    with:
+      service-name: web-app
+      version: ${{ needs.build-release.outputs.new-version }}
+

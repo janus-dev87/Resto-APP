@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<welcome:SignUpPageXaml xmlns="http://xamarin.com/schemas/2014/forms"
+                        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                        xmlns:welcome="clr-namespace:Restaurant.Mobile.UI.Pages.Welcome"
+                        xmlns:controls="clr-namespace:Restaurant.Mobile.UI.Controls"
+                        x:Class="Restaurant.Mobile.UI.Pages.Welcome.SignUpPage">
+
+    <welcome:SignUpPageXaml.Content>
+        <StackLayout VerticalOptions="Center" Padding="25">
+            <StackLayout Orientation="Vertical">
+
+                <StackLayout Orientation="Vertical" Padding="15">
+                    
+                    <Label Text="Email" Style="{StaticResource header}" />
+
+                    <controls:RestaurantEntry Text="{Binding Email}" Placeholder="Email"
+                                                  VerticalOptions="Center"
+                                                  HorizontalOptions="FillAndExpand" HasBorder="False" />
+                </StackLayout>
+
+                <StackLayout Orientation="Vertical" Padding="15">
+                   
+                    <Label Text="Password" Style="{StaticResource header}" />
+
+                    <controls:RestaurantEntry HasBorder="False" Placeholder="Password"
+                                                  HorizontalOptions="FillAndExpand" IsPassword="true"
+                                                  Text="{Binding Password}" />
+
+                </StackLayout>
+
+                <StackLayout Orientation="Vertical" Padding="15">
+
+                    <Label Text="Confirm password" Style="{StaticResource header}" />
+
+                    <controls:RestaurantEntry HasBorder="False" Placeholder="Confirm password"
+                                                  HorizontalOptions="FillAndExpand" IsPassword="true"
+                                                  Text="{Binding ConfirmPassword}" />
+
+
+                </StackLayout>
+
+                <StackLayout Padding="15">
+                    <controls:AnimateButton Text="Sign Up" Command="{Binding Register}" 
+                                            BackgroundColor="{StaticResource primaryColor}"
+                                            WidthRequest="300" HorizontalOptions="Center" />
+                </StackLayout>
+            </StackLayout>
+            <StackLayout Orientation="Vertical" HorizontalOptions="Center" VerticalOptions="End"
+                         IsVisible="{Binding IsLoading}">
+                <Label VerticalOptions="Center" TextColor="{StaticResource asphaltPrimary}">Please wait...</Label>
+                <ActivityIndicator VerticalOptions="Center" IsRunning="{Binding IsLoading}" />
+            </StackLayout>
+        </StackLayout>
+    </welcome:SignUpPageXaml.Content>
+</welcome:SignUpPageXaml>

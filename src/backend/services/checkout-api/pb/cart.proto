@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package cart;
+
+option go_package = "/v1";
+option java_multiple_files = true;
+option java_outer_classname = "CartService";
+option java_package = "org.jurabek";
+
+service CartService {
+  rpc GetCart(GetCartRequest) returns (GetCartResponse);
+}
+
+message GetCartRequest {
+  string cart_id = 1;
+}
+
+message GetCartResponse {
+  string cart_id = 1;
+  repeated CartItem items = 2;
+}
+
+message CartItem {
+  int64 item_id = 1;
+  float price = 2;
+  int64 quantity = 3;
+}

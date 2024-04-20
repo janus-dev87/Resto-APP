@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: catalog-pgsql-database
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: catalog-pgsql-database # has to match .spec.template.metadata.labels
+  serviceName: "catalog-pgsql-database"
+  replicas: 1 # by default is 1
+  template:
+    metadata:
+      labels:
+        app: catalog-pgsql-database # has to match .spec.selector.matchLabels
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: catalog-pgsql-database
+        image: postgres:alpine
+        envFrom:
+          - secretRef:
+              name: catalog-api
+        env:
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        volumeMounts:
+          - mountPath: /var/lib/postgresql/data
+            name: order-database-data
+
+  volumeClaimTemplates:
+  - metadata:
+      name: order-database-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 100Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: catalog-pgsql-database
+  name: catalog-pgsql-database
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+    targetPort: 5432
+  selector:
+    app: catalog-pgsql-database

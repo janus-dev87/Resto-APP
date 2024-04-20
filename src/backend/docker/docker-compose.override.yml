@@ -1,0 +1,98 @@
+version: "3.7"
+
+services:
+  order-api:
+    environment:
+      - QUARKUS_DATASOURCE_JDBC_URL=jdbc:postgresql://order-db:5432/orderdb
+      - QUARKUS_DATASOURCE_USERNAME=admin
+      - QUARKUS_DATASOURCE_PASSWORD=Passw0rd!
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - QUARKUS_GRPC_CLIENTS_PAYMENTSERVICE_HOST=payment-api
+      - QUARKUS_GRPC_CLIENTS_PAYMENTSERVICE_PORT=8080
+      - QUARKUS_LOG_CONSOLE_JSON=true
+      - QUARKUS_OPENTELEMETRY_TRACER_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - QUARKUS_OPENTELEMETRY_PROPAGATORS=ottrace
+
+  cart-api:
+    environment:
+      - REDIS_HOST=redis:6379
+      - KAFKA_BROKER=kafka:9092
+      - ORDERS_TOPIC=orders
+      - IDENTITY_URL=http://identity-api
+      - AUTH_URL=http://localhost:8080/identity
+      - BASE_PATH=/shoppingcart
+      - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
+
+  payment-api:
+    environment:
+      - ENABLE_TEST_CARDS=false
+      - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
+      - BASE_PATH=/payment
+
+  checkout-api:
+    environment:
+      - PORT=30001
+      - HOST=0.0.0.0
+      - CART_URL=cart-api:8081
+      - PAYMENT_API_URL=payment-api:8080
+      - KAFKA_BROKER=kafka:9092
+      - CHECKOUT_TOPIC=checkout
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_EXPORTER_OTLP_ENDPOINT_HTTP=http://otel-collector:4318/v1/metrics
+      - BASE_URL=/checkout
+      - LOG_LEVEL=debug
+
+  catalog-api:
+    environment:
+      - DATABASE_URL=postgres://admin:Passw0rd!@catalog-db:5432/catalogdb
+      - ROCKET_ADDRESS=0.0.0.0
+      - ROCKET_PORT=8000
+      - BASE_URL=/catalog
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - ENV=dev
+
+  web-app:
+    environment:
+      - INTERNAL_API_BASE_URL=http://traefik:80
+      - NEXT_SHARP_PATH=./node_modules/sharp
+      - AUTH_ISSUER=http://host.docker.internal:8080/identity
+
+  identity-api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DB_HOST=identity-db
+      - DB_NAME=identity_database
+      - DB_USER=admin
+      - DB_PASSWORD=Passw0rd!
+      - PATH_BASE=/identity
+      - MENU_API_URL=http://localhost:8080/menu
+      - ORDER_API_URL=http://localhost:8080/order
+      - BASKET_API_URL=http://localhost:8080/basket
+      - DASHBOARD_APP_URL=http://localhost:8080/dashboard
+      - IDENTITY_URL_PUB=http://localhost:8080/identity
+
+  # connect:
+  # pgcli 'postgresql://admin:Passw0rd!@localhost:5433/orderdb'
+  order-db:
+    environment:
+      - POSTGRES_PASSWORD=Passw0rd!
+      - POSTGRES_USER=admin
+      - PGDATA=/pg
+      - POSTGRES_DB=orderdb
+
+  # connect:
+  # pgcli 'postgresql://admin:Passw0rd!@localhost:5435/identity_database'
+  identity-db:
+    environment:
+      - POSTGRES_PASSWORD=Passw0rd!
+      - POSTGRES_USER=admin
+      - PGDATA=/pg
+      - POSTGRES_DB=identity_database
+
+  # connect:
+  # pgcli 'postgresql://admin:Passw0rd!@localhost:5434/catalogdb'
+  catalog-db:
+    environment:
+      - POSTGRES_PASSWORD=Passw0rd!
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=catalogdb

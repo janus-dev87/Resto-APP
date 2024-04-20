@@ -1,0 +1,49 @@
+---
+version: "3.7"
+services:
+  kafka:
+    image: docker.io/bitnami/kafka:3.6
+    ports:
+      - "9092:9092"
+    volumes:
+      - "kafka_data:/bitnami"
+    environment:
+      # KRaft settings
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      # Listeners
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+    healthcheck:
+      test: [ "CMD-SHELL", "kafka-topics.sh --bootstrap-server kafka:9092 --list" ]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+
+  kafka-init-topics:
+    image: confluentinc/cp-kafka:7.2.1
+    depends_on:
+      - kafka
+    command: "bash -c 'echo Waiting for Kafka to be ready... && \
+               cub kafka-ready -b kafka:9092 1 30 && \
+               kafka-topics --create --topic checkout --partitions 3 --replication-factor 1 --if-not-exists --bootstrap-server kafka:9092 && \
+               kafka-topics --create --topic orders --partitions 3 --replication-factor 1 --if-not-exists --bootstrap-server kafka:9092 
+               '"
+  
+  kafka-ui:
+    image: provectuslabs/kafka-ui
+    container_name: kafka-ui
+    ports:
+      - "8089:8080"
+    restart: always
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+
+volumes:
+  kafka_data:
+    driver: local

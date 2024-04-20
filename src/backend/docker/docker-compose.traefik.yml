@@ -1,0 +1,64 @@
+version: "3.7"
+
+services:
+  traefik:
+    image: "traefik:v3.0"
+    container_name: "traefik"
+    command:
+      - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--tracing.openTelemetry.address=otel-collector:4317"
+      - "--tracing.openTelemetry.insecure=true"
+      - "--tracing.openTelemetry.grpc=true"
+      - "--metrics.openTelemetry.insecure=true"
+      - "--metrics.openTelemetry.address=otel-collector:4318"
+    ports:
+      - "8080:80"
+      - "8081:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  web-app:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.web.rule=PathPrefix(`/`)"
+      - "traefik.port=3000"
+
+  payment-api:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.payment.rule=PathPrefix(`/payment/`)"
+      - "traefik.port=8980"
+
+  identity-api:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.identity.rule=PathPrefix(`/identity/`)"
+      - "traefik.port=5001"
+
+  catalog-api:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.catalog.rule=PathPrefix(`/catalog/`)"
+      - "traefik.port=8000"
+
+  cart-api:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.basket.rule=PathPrefix(`/shoppingcart/`)"
+      - "traefik.port=5200"
+
+  order-api:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.order.rule=PathPrefix(`/order/`)"
+      - "traefik.port=8082"
+
+  checkout-api:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.checkout.rule=PathPrefix(`/checkout/`)"
+      - "traefik.port=30001"

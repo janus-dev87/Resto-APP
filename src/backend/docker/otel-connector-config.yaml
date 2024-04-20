@@ -1,0 +1,99 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+  loki:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:3500
+      grpc:
+        endpoint: 0.0.0.0:3600
+    use_incoming_timestamp: true
+
+exporters:
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    const_labels:
+      env: local
+  
+  prometheusremotewrite:
+    endpoint: http://prometheus:9090/api/v1/write
+    resource_to_telemetry_conversion:
+      enabled: true
+
+  otlp:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+
+  logging:
+    loglevel: info 
+
+  loki:
+    endpoint: http://loki:3100/loki/api/v1/push
+
+  otlp/jaeger: # Jaeger supports OTLP directly
+    endpoint: jaeger-all-in-one:4317
+    tls:
+      insecure: true
+  zipkin:
+    endpoint: http://zipkin-all-in-one:9411/api/v2/spans
+
+processors:
+  batch:
+  filter:
+    metrics:
+      exclude:
+        match_type: strict
+        metric_names:
+          - queueSize
+  resource:
+    attributes:
+      - action: insert
+        key: loki.resource.labels
+        value: service.name
+
+
+  attributes:
+    actions:
+      - action: insert
+        key: loki.attribute.labels
+        value: container
+      - action: insert
+        key: loki.format
+        value: raw
+
+extensions:
+  health_check:
+  pprof:
+    endpoint: :1888
+  zpages:
+    endpoint: :55679
+
+
+connectors:
+  spanmetrics:
+    namespace: traces.span.metrics
+    histogram:
+      unit: ms
+
+  servicegraph:
+
+service:
+  extensions: [pprof, zpages, health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp, otlp/jaeger, zipkin, spanmetrics, servicegraph]
+
+    metrics:
+      receivers: [otlp, spanmetrics, servicegraph]
+      processors: [batch]
+      exporters: [logging, prometheus, prometheusremotewrite]
+
+    logs:
+      receivers: [loki]
+      processors: [attributes, resource]
+      exporters: [loki]

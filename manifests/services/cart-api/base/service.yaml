@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cart-api
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    name: http
+    targetPort: 5200
+  - port: 81
+    name: grpc
+    targetPort: 8081
+  selector:
+    app: cart-api

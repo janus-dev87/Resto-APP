@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Managers\**" />
+    <EmbeddedResource Remove="Managers\**" />
+    <None Remove="Managers\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="ReactiveUI" Version="9.19.5" />
+    <PackageReference Include="Refit" Version="4.7.9" />
+  </ItemGroup>
+</Project>

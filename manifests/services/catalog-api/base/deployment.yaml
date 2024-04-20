@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: catalog-api
+  template:
+    metadata:
+      labels:
+        app: catalog-api
+    spec:
+      containers:
+      - name: catalog-api
+        image: catalog-api # must much from ./kustomization.yaml -> images[0].name
+        imagePullPolicy: Always 
+        ports:
+          - containerPort: 8000
+        envFrom:
+          - configMapRef:
+              name: catalog-api
+          - secretRef:
+              name: catalog-api
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 8000
+          initialDelaySeconds: 3
+          timeoutSeconds: 5
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 5
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 8000
+          initialDelaySeconds: 3
+          periodSeconds: 15
+          successThreshold: 1
+          failureThreshold: 5
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

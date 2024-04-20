@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-api
+  template:
+    metadata:
+      labels:
+        app: order-api
+    spec:
+      containers:
+        - image: order-api # must much from ./kustomization.yaml -> images[0].name
+          imagePullPolicy: IfNotPresent
+          name: order-api
+          ports:
+            - containerPort: 8080
+          env:
+            - name: QUARKUS_HTTP_ROOT_PATH
+              value: /order
+          envFrom:
+            - configMapRef:
+                name: order-api
+            - secretRef:
+                name: order-api
+          readinessProbe:
+            httpGet:
+              path: /order/health/ready
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /order/health/live
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "600m"
+            limits:
+              memory: "1G"
+              cpu: "1000m"
